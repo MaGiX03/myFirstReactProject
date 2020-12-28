@@ -7,23 +7,25 @@ class SoccerTable extends React.Component {
     super(props);
     this.state = {
       error: null, 
-      isLoaded: false,
-      season: 8,
-      clubs: [],
-      teamMatches: [],
-      isTeam: false,
-      liveMatches: [],
-      prev_page: false,
-      next_page: false,
-      current_page: 1,
+      isLoaded: false, //для проверки происходит ли запрос в данное время
+      season: 8, // Ид сезона который нам нужен
+      clubs: [], // данные о клубах
+      teamMatches: [], // данные о матчах определенного клуба
+      isTeam: false, // выбран ли определенный клуб
+      liveMatches: [], // данные о матчах которые идут в текущее время
+      prev_page: false, // данные о страницах в списке матчей клуба
+      next_page: false,  
+      current_page: 1, 
           };
   }
-
+// Действия при первоначальном рендеринге
   componentDidMount() {
+  	// проверяем куки, чтобы узнать авторизован ли пользователь, в ином случае переадресуем к начальной странице
   	if (!getCookie("user")) {
 			window.location.href = "/";
 			return;
 		}
+	// вызываем метод для получения данных о футбольной таблице из API LiveScore
   		this.gettingSoccerTable();
   		
   		
@@ -60,7 +62,7 @@ class SoccerTable extends React.Component {
 	}
 
 	
-
+	// метод для получения данных о текущих матчах
 	gettingLiveScore() {
 
 		fetch("https://live-score-api.p.rapidapi.com/scores/live.json?secret=ljFi7Kv2Q77weQm9nL8b6tTuc6FIrKmN&key=VxpZNkkIoJcbwl4D&competition_id=2", {
@@ -87,7 +89,9 @@ class SoccerTable extends React.Component {
   			)
 
 	}
-	gettingTeamMatches(team) {
+
+	// метод для получения матчей определенного клуба
+	gettingTeamMatches() {
 		fetch(`https://live-score-api.p.rapidapi.com/scores/history.json?key=VxpZNkkIoJcbwl4D&secret=ljFi7Kv2Q77weQm9nL8b6tTuc6FIrKmN&team=${this.state.isTeam}&page=${this.state.current_page}`, {
 			"method": "GET",
 			"headers": {
@@ -116,15 +120,19 @@ class SoccerTable extends React.Component {
   			)
 	}
 
+
+	// метод для изменения состояния сезона
 	changeSeason = async (e) => {
 		let value = e.target.value;
 		await this.setState({
 			season:value,
 			isLoaded:false
 		})
+		// вызываем метод, чтобы отобразить таблицу уже другого сезона
 		this.gettingSoccerTable();
 	}
 
+	// метод для показа текущих матчей, если сейчас нету матчей возвращает null, если есть возвращает список текущих матчей
 	isLive() {
 		const liveMatches = this.state.liveMatches;
 		const season = this.state.season;
@@ -150,7 +158,7 @@ class SoccerTable extends React.Component {
 		
 	}
 
-
+	// метод для изменения состояния isTeam и вызова метода получения матчей клуба
 	runGettingTeamMatches = async (e) => {
 		let team = e.target.attributes.team_id.nodeValue;
 		await this.setState({
@@ -159,30 +167,34 @@ class SoccerTable extends React.Component {
 		});
 		this.gettingTeamMatches();
 	}
-
+	// возвращения назад к таблице лиги от таблицы матчей клуба
 	backToTable = async () => {
 		await this.setState({
 			isLoaded: true,
 			isTeam: false,
 		});
 	}
-
+	// переход по страницам таблицы матчей клуба
 	goToPage = async (page) => {
 		await this.setState({
 			isLoaded: false,
 			current_page: page
 		});
+		// вызываем метод получения матчей клуба, чтобы выгрузить данные другой страницы
 		this.gettingTeamMatches();
 	}
 
 
   render() {
-  	
+  	// берём данные о состояниях компонента
   	const {error, isLoaded,season, clubs, teamMatches, isTeam, prev_page, next_page, current_page} = this.state;
+  	// проверяем на ошибки при запросах, если есть выводим
    	if (error) {
    		return <p> Error {error.message} </p>
+   	// проверяем закончились ли запросы
    	} else if (!isLoaded) {
    		return <p> Loading... </p>
+   	// выодим таблицу лиги, если нету выбранного клуба
    	} else if (!isTeam) {
    		return (
    			<div className="container">
@@ -224,6 +236,7 @@ class SoccerTable extends React.Component {
    		
    			);
    	}
+   	// выводим матчи выбранного клуба
    	else {
    		return (
    			<div className="container">
@@ -254,6 +267,7 @@ class SoccerTable extends React.Component {
 	   				
 							
 	   					))}
+					   {/*проверяем существует ли предыдущая или следующая страниц, если есть выводим кнопки*/}
 	   					{ prev_page  &&
 	   					<button onClick={e => this.goToPage(current_page - 1)}>Prev</button>
 	   					}
@@ -271,6 +285,7 @@ class SoccerTable extends React.Component {
 
   }
 }
+
 
 function getCookie(name) {
   let matches = document.cookie.match(new RegExp(

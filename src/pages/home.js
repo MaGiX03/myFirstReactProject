@@ -7,6 +7,7 @@ class Home extends React.Component {
     error: undefined
   };
 
+  // метод для проверки формы входа, если данные правильные записывает в куки login и переадресует пользователся на страницу с таблицей
   authMethod = (e) => {
     e.preventDefault();
     const login = e.target.elements.login.value;
@@ -27,6 +28,7 @@ class Home extends React.Component {
   render() {
     return (
       <div>
+          {/*Отправляем компоненту Form свойства authMethod(Чтобы компонент Form мог вызвать метод authMethod этого компонента) и error(для отображения ошибок)*/}
           <Form authMethod={this.authMethod} error={this.state.error} />
       </div>
       );

@@ -1,5 +1,6 @@
 import React from "react";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom"; // Модуль для перехода по страницам
+// Компоненты самих страниц
 import Home from "./pages/home";
 import SoccerTable from "./pages/soccer_table";
 
